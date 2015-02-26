@@ -19,7 +19,21 @@ The api is powered by foursquare and written in python
 ```
 pip install bottle
 ./run.sh
+#open browser to localhost:8080
 ```	
+
+####Configuration
+
+edit run.sh with updated client_id and client_secret and open http://localhost:8080/oauth/authenticate in a browser
+
+```
+export client_id=<<foursquare client id>>
+export client_secret=<<foursquare client secret>>
+
+##after visiting /oauth/authenticate
+
+export access_token=<<foursquare access token>>
+```
 
 ###Roadmap
 
