@@ -31,9 +31,9 @@ class Api:
 	def query_photos_from_venue(self, venue, params):
 		payload = self.client.venues.photos(VENUE_ID=venue["id"], params=params)
 		
-		#with open('photos_' + venue["id"], 'w') as f:
-		#	output = json.dumps(payload, sort_keys=True, indent=4, separators=(',', ': '))
-		#	f.write(output)
+		with open('photos_' + venue["id"], 'w') as f:
+			output = json.dumps(payload, sort_keys=True, indent=4, separators=(',', ': '))
+			f.write(output)
 		
 		return payload["photos"]["items"]
 

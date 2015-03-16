@@ -1,5 +1,5 @@
 import foursquare, json, os
-from bottle import route, run, template, request, response, redirect
+from bottle import hook, route, run, template, request, response, redirect
 from api import Api
 
 ##Setup
@@ -18,7 +18,15 @@ api = Api(access_token)
 host = 'localhost'
 port = 8080
 root = 'http://{}:{}/'.format(host, port)
-
+venues_with_photos = [] 
+photos = []
+images = []
+likeCount = 0
+dislikeCount = 0
+@hook('after_request')
+def enable_cors():
+	    response.headers['Access-Control-Allow-Origin'] = '*'
+	    
 ##Define routes
 
 #default route to get links to api
@@ -58,10 +66,47 @@ def venues():
 	response.content_type = 'application/json'
 	return json.dumps(result, sort_keys=True, indent=4, separators=(',', ': '))
 
+
+#output the photos for portland venues
+@route('/venues/photos.json')
+def venues_photos():
+	global venues_with_photos
+	if len(venues_with_photos) == 0:
+		venues_with_photos = api.query_venues(params)
+	else:
+		print "using cached venues"
+	print "There are {} venues with photos".format(len(venues_with_photos))
+	global photos 
+	if len(photos) == 0:
+		for venue in venues_with_photos:
+			photos.extend(api.query_photos_from_venue(venue, {'limit': 200}))
+	else: 
+		print "using cached photos"
+	global images
+	limit = 10
+	if len(images) == 0:
+		for photo in photos:
+			limit -= 1
+			if(limit > 0):
+				images.append({ 
+					'photoID': photo["id"], 
+					'venueID': venue["id"], 
+					'fullsize': api.get_fullsize_url_from_photo(photo), 
+					'thumbnail': api.get_thumbnail_url_from_photo(photo, width=150, height=200) })
+	
+	response.content_type = 'application/json'
+	return json.dumps(images, sort_keys=True, indent=4, separators=(',', ': '))
+
+
 #output the photos for portland venues
 @route('/venues/photos')
 def venues_photos():
-	venues_with_photos = api.query_venues(params)
+	global venues_with_photos
+	if len(venues_with_photos) == 0:
+		venues_with_photos = api.query_venues(params)
+	else:
+		print "retrieving venues from cache"
+	
 	print "There are {} venues with photos".format(len(venues_with_photos))
 	photos = []
 	for venue in venues_with_photos:
@@ -86,6 +131,19 @@ def user_photos():
 		html = html + "<a href='" + api.get_fullsize_url_from_photo(photo) + "'><img src='"+ api.get_thumbnail_url_from_photo(photo, width=50, height=50) + "' /></a>"
 	return html
 
+
+@route('/vote/like')
+def like():
+	global likeCount
+	likeCount += 1
+	print "likes: {}".format(likeCount)
+
+@route('/vote/dislike')
+def dislike():
+	global dislikeCount
+	dislikeCount += 1
+	print "dislikes: {}".format(dislikeCount)
+	
 
 run(host=host, port=port)
 

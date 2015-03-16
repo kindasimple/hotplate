@@ -4,4 +4,7 @@ export client_id=V0TER5Y1FR5T2DU5MXS2PNRUL2EXHQ4FA1FUFN15SJVQX3LX
 export client_secret=4FVO5XED2VOUYN01HIEDW0ZURWZUBXZH4A2T225ZVTDJ4KSO
 export access_token=JESRVYQC5WMPYPRBXEUVGE4BDRDIQZYO3351DDZHRROX4TUG
 
-python feed.py
+python ./api/feed.py &
+cd app
+python -m SimpleHTTPServer 8899
+kill -- -$$
